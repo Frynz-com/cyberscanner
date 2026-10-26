@@ -1,5 +1,5 @@
 /** Anzeigenamen der Prüfmodule (Client und Worker). */
-export const ADAPTER: Record<string, { label: string; description: string }> = { label: string; description: string }> = {
+export const ADAPTER: Record<string, { label: string; description: string }> = {
   dns: { label: "DNS & E-Mail", description: "SPF, DMARC, DKIM, DNSSEC, CAA, Nameserver, verwaiste Einträge" },
   tls: { label: "TLS-Zertifikate", description: "Gültigkeit, Ablauf, Hostname, Vertrauenskette, veraltete Protokolle" },
   http_headers: { label: "Website-Konfiguration", description: "HTTPS, Weiterleitung, Sicherheitsheader, Cookies, security.txt" },
