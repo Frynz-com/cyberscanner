@@ -149,14 +149,14 @@ isOneToOne: false
                   ]
                 },"domains": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"hostname": string,"id": string,"is_demo": boolean,"last_scan_at": string | null,"monitoring_enabled": boolean,"next_scan_at": string | null,"org_id": string,"scan_interval_hours": number,"verification_last_checked_at": string | null,"verification_status": Database["public"]['Enums']["domain_verification_status"],"verified_at": string | null
+                    "created_at": string,"created_by": string | null,"hostname": string,"id": string,"is_demo": boolean,"last_scan_at": string | null,"monitoring_enabled": boolean,"next_intel_at": string | null,"next_scan_at": string | null,"org_id": string,"scan_interval_hours": number,"verification_last_checked_at": string | null,"verification_status": Database["public"]['Enums']["domain_verification_status"],"verified_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"hostname": string,"id"?: string,"is_demo"?: boolean,"last_scan_at"?: string | null,"monitoring_enabled"?: boolean,"next_scan_at"?: string | null,"org_id": string,"scan_interval_hours"?: number,"verification_last_checked_at"?: string | null,"verification_status"?: Database["public"]['Enums']["domain_verification_status"],"verified_at"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"hostname": string,"id"?: string,"is_demo"?: boolean,"last_scan_at"?: string | null,"monitoring_enabled"?: boolean,"next_intel_at"?: string | null,"next_scan_at"?: string | null,"org_id": string,"scan_interval_hours"?: number,"verification_last_checked_at"?: string | null,"verification_status"?: Database["public"]['Enums']["domain_verification_status"],"verified_at"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"hostname"?: string,"id"?: string,"is_demo"?: boolean,"last_scan_at"?: string | null,"monitoring_enabled"?: boolean,"next_scan_at"?: string | null,"org_id"?: string,"scan_interval_hours"?: number,"verification_last_checked_at"?: string | null,"verification_status"?: Database["public"]['Enums']["domain_verification_status"],"verified_at"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"hostname"?: string,"id"?: string,"is_demo"?: boolean,"last_scan_at"?: string | null,"monitoring_enabled"?: boolean,"next_intel_at"?: string | null,"next_scan_at"?: string | null,"org_id"?: string,"scan_interval_hours"?: number,"verification_last_checked_at"?: string | null,"verification_status"?: Database["public"]['Enums']["domain_verification_status"],"verified_at"?: string | null
                   }
                   Relationships: [
                     {

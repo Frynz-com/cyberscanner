@@ -4,12 +4,13 @@ import { addTimeline, notify } from "../src/lib/core/events";
 import { createLogger, createServiceClient, NonRetryableError, type WorkerDeps } from "./deps";
 import { runDomainScan, type ScanJob } from "./jobs/domain-scan";
 import { runPublicCheck } from "./jobs/public-check";
+import { runIntelWatch } from "./jobs/intel-watch";
 import { runReverify } from "./jobs/reverify";
 import { processEmailOutbox } from "./mailer";
 import { applyRetention, recheckVerifications, refreshKev } from "./maintenance";
 import { generateMonthlyReports } from "./reports";
 import { refreshProviderHealth } from "./providers";
-import { enqueueDueScans } from "./scheduler";
+import { enqueueDueIntelWatches, enqueueDueScans } from "./scheduler";
 
 const env = process.env as Record<string, string | undefined>;
 const workerId = env.WORKER_ID ?? `${hostname()}-${process.pid}`;
@@ -17,11 +18,11 @@ const log = createLogger({ worker: workerId });
 const deps: WorkerDeps = { db: createServiceClient(env), env, log, workerId };
 
 const CONCURRENCY = Math.max(1, Math.min(8, Number(env.WORKER_CONCURRENCY ?? 2)));
-const KINDS = ["domain_scan", "reverify", "public_check"];
+const KINDS = ["domain_scan", "reverify", "public_check", "intel_watch"];
 let shuttingDown = false;
 
 type Handler = (job: ScanJob, deps: WorkerDeps, signal: AbortSignal) => Promise<unknown>;
-const HANDLERS: Record<string, Handler> = { domain_scan: runDomainScan, reverify: runReverify, public_check: runPublicCheck };
+const HANDLERS: Record<string, Handler> = { domain_scan: runDomainScan, reverify: runReverify, public_check: runPublicCheck, intel_watch: runIntelWatch };
 
 export async function processJob(job: ScanJob, d: WorkerDeps = deps): Promise<void> {
   const controller = new AbortController();
@@ -116,6 +117,7 @@ async function main() {
   const timers = [
     every("provider-health", 10 * 60_000, () => refreshProviderHealth(deps.db, env)),
     every("scheduler", 60_000, () => enqueueDueScans(deps)),
+    every("intel-scheduler", 5 * 60_000, () => enqueueDueIntelWatches(deps)),
     every("requeue-stale", 2 * 60_000, async () => (await deps.db.rpc("requeue_stale_jobs", { p_stale_seconds: 300 })).data),
     every("email-outbox", 30_000, () => processEmailOutbox(deps)),
     every("kev", 24 * 3600_000, () => refreshKev(deps)),

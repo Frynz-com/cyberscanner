@@ -33,6 +33,7 @@ export const CATEGORY: Record<string, string> = {
   vulnerability: "Schwachstellen",
   breach: "Datenlecks",
   asset: "Assets",
+  brand: "Phishing & Markenmissbrauch",
 };
 
 export { ADAPTER } from "@/lib/core/adapter-labels";

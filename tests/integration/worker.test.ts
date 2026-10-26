@@ -231,3 +231,25 @@ describe("Löschkonzept", () => {
     expect(logs![0].org_id).toBeNull();
   });
 });
+
+describe("24/7-Basis: Intel-Watch", () => {
+  it("plant leichte Threat-Intel-Läufe nach Tarif-Intervall ein und verarbeitet sie", async () => {
+    const { enqueueDueIntelWatches } = await import("../../worker/scheduler");
+    await service.from("domains").update({ next_intel_at: new Date(Date.now() + 86_400_000).toISOString() }).not("id", "is", null);
+    const u = await createUser("intel");
+    const { orgId, domainId } = await createOrgWithDomain(u.id, "Intel GmbH", `intel-${Date.now()}.de`);
+    await service.from("domains").update({ last_scan_at: new Date().toISOString(), next_intel_at: null }).eq("id", domainId);
+    expect(await enqueueDueIntelWatches(deps())).toBe(1);
+    expect(await enqueueDueIntelWatches(deps())).toBe(0); // nächster Lauf erst nach Intervall
+    const { data: dom } = await service.from("domains").select("next_intel_at").eq("id", domainId).single();
+    expect(new Date(dom!.next_intel_at!).getTime()).toBeGreaterThan(Date.now() + 23 * 3600_000); // Testphase: 24 h
+    const { data: job } = await service.from("scan_jobs").select("*").eq("domain_id", domainId).eq("kind", "intel_watch").single();
+    await service.from("scan_jobs").update({ status: "running", attempts: 1 }).eq("id", job!.id);
+    // Netzwerkquellen abschalten: geprüft wird der Ablauf, nicht die Drittanbieter
+    await processJob({ ...job!, status: "running", attempts: 1 }, { ...deps(), env: { ...process.env, HUDSONROCK_MODE: "off", RANSOMWARE_LIVE_MODE: "off", HIBP_API_KEY: "" } });
+    const { data: after } = await service.from("scan_jobs").select("status, summary").eq("id", job!.id).single();
+    expect(after!.status).toBe("succeeded");
+    expect(JSON.stringify(after!.summary)).toContain("hudsonrock:unavailable");
+    void orgId;
+  }, 180_000);
+});

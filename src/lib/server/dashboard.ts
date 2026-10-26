@@ -27,7 +27,7 @@ export async function loadDashboard(orgId: string, isDemo: boolean, orgPaused: b
   const lastDomainJob = (jobs.data ?? []).find((j) => j.kind === "domain_scan" && ["succeeded", "failed"].includes(j.status));
   const runningJobs = (jobs.data ?? []).filter((j) => ["queued", "running"].includes(j.status));
 
-  const relevantProviders = ["dns", "tls", "http_headers", "subfinder", "ct_logs", "internetdb", "hibp"];
+  const relevantProviders = ["dns", "tls", "http_headers", "subfinder", "ct_logs", "internetdb", "hibp", "hudsonrock", "ransomware_live", "lookalike"];
   const missing = (providers.data ?? []).filter((p) => relevantProviders.includes(p.key) && !["available", "degraded"].includes(p.status));
 
   const status = computeMonitoringStatus({

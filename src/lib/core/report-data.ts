@@ -52,6 +52,9 @@ const ADAPTER_LABELS: Record<string, string> = {
   ct_logs: "Certificate Transparency",
   internetdb: "Shodan InternetDB",
   hibp: "Datenleck-Überwachung (HIBP)",
+  hudsonrock: "Infostealer-Hinweise (Hudson Rock)",
+  ransomware_live: "Ransomware-Leakseiten (ransomware.live)",
+  lookalike: "Nachgemachte Domains",
   nuclei: "Autorisierte Schwachstellenprüfung",
 };
 export const adapterLabel = (k: string) => ADAPTER_LABELS[k] ?? k;

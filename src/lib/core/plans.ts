@@ -7,6 +7,8 @@ export interface PlanLimits {
   partner_invites: number;
   reports: boolean;
   vuln_scan: boolean;
+  /** Intervall der leichten Threat-Intel-Abfragen (Stunden) */
+  intel_interval_hours: number;
 }
 
 export const INACTIVE_LIMITS: PlanLimits = {
@@ -18,6 +20,7 @@ export const INACTIVE_LIMITS: PlanLimits = {
   partner_invites: 0,
   reports: true,
   vuln_scan: false,
+  intel_interval_hours: 744,
 };
 
 /** Abo-Status, die Leistungen freischalten (serverseitig ausgewertet). */

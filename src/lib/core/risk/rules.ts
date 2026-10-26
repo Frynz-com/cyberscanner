@@ -721,6 +721,107 @@ rule({
   docs: [],
 });
 
+// ---------------------------------------------------------------------------
+// Threat Intelligence: Infostealer (Hudson Rock), Ransomware-Leakseiten, nachgemachte Domains
+// ---------------------------------------------------------------------------
+const ageText = (days: number) => (days < 1 ? "heute" : days < 60 ? `vor ${days} Tagen` : `vor ${Math.round(days / 30)} Monaten`);
+
+rule({
+  id: "intel.infostealer_employees",
+  check: "intel.infostealer",
+  category: "breach",
+  certainty: "potential",
+  confidence: "medium",
+  title: (o) => `${num(o, "employees")} infizierte Rechner mit Firmen-Zugangsdaten gefunden`,
+  evaluate: (o) => {
+    const age = num(o, "ageDays");
+    const reasons = [`${num(o, "employees")} Mitarbeiter-Gerät(e) mit Zugangsdaten zu Ihren Systemen in Infostealer-Daten`, `Letzte Infektion ${ageText(age)}`];
+    if (age <= 90) return { severity: "critical", reasons: [...reasons, "Aktuell (≤ 90 Tage): gestohlene Zugangsdaten und Sitzungen sind sehr wahrscheinlich noch gültig"] };
+    if (age <= 730) return { severity: "high", reasons: [...reasons, "Innerhalb der letzten 2 Jahre"] };
+    return { severity: "medium", reasons: [...reasons, "Älter als 2 Jahre – Zugangsdaten vermutlich bereits geändert"] };
+  },
+  summary: (o) =>
+    `Auf ${num(o, "employees")} Rechner(n) von Mitarbeitenden oder Dienstleistern wurde Schadsoftware (Infostealer) aktiv, die Zugangsdaten zu Ihren Systemen abgegriffen hat – zuletzt ${ageText(num(o, "ageDays"))}. Betroffen sind u. a. Anmeldungen an: ${((o.facts.urls as string[]) ?? []).slice(0, 3).join(", ") || "Ihre Systeme"}.`,
+  businessImpact: () =>
+    "Infostealer sind heute einer der häufigsten Wege zu Ransomware-Angriffen: Kriminelle kaufen die gestohlenen Logins und melden sich damit direkt an VPN, E-Mail oder Portalen an – oft ohne dass ein Passwort geknackt werden muss. Der Hinweis beweist keine aktuelle Kontoübernahme, ist aber ernst zu nehmen.",
+  recommendation: () =>
+    "1. Passwörter aller Konten für die genannten Anmeldeseiten zurücksetzen. 2. Alle aktiven Sitzungen und Tokens widerrufen. 3. MFA für diese Zugänge erzwingen. 4. Anmeldeprotokolle seit dem Infektionsdatum prüfen. 5. IT-Dienstleister die betroffenen Geräte identifizieren und bereinigen lassen (auch private Geräte mit Firmenzugang).",
+  technicalDetails: (o) =>
+    `Quelle: Hudson Rock (Infostealer-Datenbank, nur Zählwerte und URLs – keine Zugangsdaten abgerufen).\nBetroffene Geräte (Mitarbeitende): ${num(o, "employees")} · letzte Infektion: ${str(o, "lastCompromised").slice(0, 10) || "unbekannt"}\nBetroffene Anmeldeseiten: ${((o.facts.urls as string[]) ?? []).join(", ")}\nPasswortstärke der erfassten Firmen-Passwörter: ${str(o, "passwordStrength") || "–"}\nSchadsoftware-Familien (Domain gesamt): ${str(o, "families") || "–"}`,
+  verificationSteps: () => "Anmeldeprotokolle (z. B. Microsoft Entra ID Sign-in Logs, VPN-Logs) auf Anmeldungen von unbekannten Orten/Geräten seit dem Infektionsdatum prüfen.",
+  docs: [{ label: "Hudson Rock – Infostealer Intelligence", url: "https://www.hudsonrock.com/" }],
+});
+
+rule({
+  id: "intel.infostealer_users",
+  check: "intel.infostealer",
+  category: "breach",
+  certainty: "potential",
+  confidence: "medium",
+  title: (o) => `${num(o, "users").toLocaleString("de-DE")} Kundenkonten Ihrer Website in Infostealer-Daten`,
+  evaluate: (o) =>
+    num(o, "ageDays") <= 365
+      ? { severity: "medium", reasons: [`Zugangsdaten von ${num(o, "users")} Nutzer(n) Ihrer Login-Seiten wurden auf deren Geräten gestohlen`, `Letzter Fall ${ageText(num(o, "ageDays"))}`] }
+      : { severity: "low", reasons: ["Gestohlene Kundenzugänge, letzter Fall älter als 1 Jahr"] },
+  summary: (o) => `Bei ${num(o, "users").toLocaleString("de-DE")} Nutzern Ihrer Website (z. B. Kunden, Händler) wurden Zugangsdaten zu Ihren Login-Seiten von deren eigenen, infizierten Geräten gestohlen.`,
+  businessImpact: () => "Angreifer können sich damit in Kundenkonten Ihres Portals oder Shops anmelden (Kontoübernahme, Bestellbetrug). Die Ursache liegt nicht auf Ihren Systemen, das Risiko trifft aber Ihr Geschäft und Ihre Kunden.",
+  recommendation: () => "MFA bzw. Anmeldebenachrichtigungen für Kundenkonten anbieten, Schutz gegen automatisierte Login-Versuche (Rate-Limits, Bot-Schutz) aktivieren und bei Bedarf Passwort-Resets erzwingen.",
+  technicalDetails: (o) => `Quelle: Hudson Rock. Betroffene Kunden-Anmeldeseiten: ${((o.facts.urls as string[]) ?? []).join(", ")} · letzter Fall: ${str(o, "lastCompromised").slice(0, 10) || "unbekannt"}`,
+  docs: [{ label: "OWASP – Credential Stuffing Prevention", url: "https://cheatsheetseries.owasp.org/cheatsheets/Credential_Stuffing_Prevention_Cheat_Sheet.html" }],
+});
+
+rule({
+  id: "intel.ransomware_listing",
+  check: "intel.ransomware",
+  category: "breach",
+  certainty: "potential",
+  confidence: "high",
+  title: (o) => `Unternehmen auf Ransomware-Leakseite genannt (${str(o, "group")})`,
+  evaluate: (o) =>
+    num(o, "ageDays") <= 180
+      ? { severity: "critical", reasons: [`Die Gruppe „${str(o, "group")}“ führt einen Eintrag mit Ihrer Domain`, `Veröffentlicht ${ageText(num(o, "ageDays"))}`] }
+      : { severity: "high", reasons: [`Historischer Eintrag der Gruppe „${str(o, "group")}“`, `Veröffentlicht ${ageText(num(o, "ageDays"))}`] },
+  summary: (o) => `Eine Ransomware-Gruppe („${str(o, "group")}“) nennt „${str(o, "victim")}“ mit Ihrer Domain auf ihrer Leakseite (erfasst am ${str(o, "discovered").slice(0, 10)}).`,
+  businessImpact: () => "Ransomware-Gruppen veröffentlichen dort Firmen, deren Daten sie nach eigener Aussage erbeutet haben. Das kann bedeuten, dass vertrauliche Daten bereits öffentlich sind. Angaben der Täter sind nicht immer zutreffend – eine Prüfung ist trotzdem dringend.",
+  recommendation: () => "Sofort Geschäftsführung, IT-Dienstleister und ggf. Incident-Response-Experten einbeziehen; Datenschutzbeauftragte(n) informieren (mögliche Meldepflicht nach Art. 33 DSGVO binnen 72 h); Anzeige bei der ZAC der Landespolizei. Nicht eigenständig Kontakt zu den Tätern aufnehmen.",
+  technicalDetails: (o) => `Quelle: ransomware.live (öffentliche Beobachtung von Leakseiten)\nEintrag: ${str(o, "victim")} · Gruppe: ${str(o, "group")} · Angriffsdatum laut Gruppe: ${str(o, "attackDate").slice(0, 10) || "–"} · Land: ${str(o, "country") || "–"}`,
+  docs: [{ label: "ransomware.live", url: "https://www.ransomware.live/" }],
+});
+
+rule({
+  id: "brand.lookalike_domain",
+  check: "brand.lookalike",
+  category: "brand",
+  certainty: "potential",
+  confidence: "medium",
+  title: (o) => `Ähnliche Domain registriert: ${str(o, "lookalike")}`,
+  evaluate: (o) =>
+    f(o, "hasMx")
+      ? { severity: "medium", reasons: [`„${str(o, "lookalike")}“ ähnelt Ihrer Domain (${str(o, "technique")})`, "Hat E-Mail-Server (MX) – kann für täuschend echte Phishing-Mails genutzt werden"] }
+      : { severity: "low", reasons: [`„${str(o, "lookalike")}“ ähnelt Ihrer Domain (${str(o, "technique")})`, "Hat eine Website, aber keinen E-Mail-Server"] },
+  summary: (o) => `Die Domain ${str(o, "lookalike")} ist registriert und sieht Ihrer Domain zum Verwechseln ähnlich${f(o, "hasMx") ? " – sie kann E-Mails versenden und empfangen" : ""}.`,
+  businessImpact: () => "Solche Domains werden häufig für gefälschte Rechnungen, Phishing an Mitarbeitende oder Kunden und CEO-Betrug genutzt. Sie kann aber auch harmlos sein oder Ihnen selbst gehören.",
+  recommendation: () => "Prüfen, ob die Domain Ihnen oder einem Partner gehört (dann als akzeptiert markieren). Andernfalls: Mitarbeitende und Buchhaltung warnen, die Domain im E-Mail-Filter sperren und ggf. rechtlich (Markenrecht/UDRP) bzw. beim Registrar gegen Missbrauch vorgehen.",
+  technicalDetails: (o) => `Ähnliche Domain: ${str(o, "lookalike")} (Technik: ${str(o, "technique")})\nA-Records: ${((o.facts.a as string[]) ?? []).join(", ") || "–"}\nMX-Records: ${((o.facts.mx as string[]) ?? []).join(", ") || "–"}`,
+  verificationSteps: (o) => `dig +short MX ${str(o, "lookalike")}\nwhois ${str(o, "lookalike")}`,
+  docs: [{ label: "dnstwist (Methodik)", url: "https://github.com/elceef/dnstwist" }],
+});
+
+rule({
+  id: "brand.lookalike_more",
+  check: "brand.lookalike",
+  category: "brand",
+  certainty: "informational",
+  confidence: "medium",
+  title: (o) => `${num(o, "count")} weitere ähnliche Domains registriert`,
+  evaluate: fixed("info", "Weitere registrierte Domain-Varianten mit geringerer Priorität (ohne E-Mail-Server bzw. unauffällige Schreibweise)"),
+  summary: (o) => `Zusätzlich zu den einzeln gemeldeten Fällen sind ${num(o, "count")} weitere Varianten Ihrer Domain registriert.`,
+  businessImpact: () => "Viele dieser Domains sind harmlos (z. B. andere Firmen mit ähnlichem Namen), einzelne können aber später für Phishing aktiviert werden.",
+  recommendation: () => "Liste einmal durchsehen; wir melden, sobald eine dieser Domains einen E-Mail-Server erhält.",
+  technicalDetails: (o) => ((o.facts.domains as string[]) ?? []).join(", "),
+  docs: [],
+});
+
 export const RULES: ReadonlyMap<string, RuleDefinition> = new Map(rules.map((r) => [r.id, r]));
 
 export function getRule(id: string): RuleDefinition {

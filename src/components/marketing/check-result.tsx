@@ -65,8 +65,10 @@ export function CheckResult({ id }: { id: string }) {
     );
   }
   const r = data.result;
-  const relevant = r.findings.filter((f) => f.severity !== "info");
-  const infos = r.findings.filter((f) => f.severity === "info");
+  const brand = r.findings.filter((f) => f.category === "brand" && !f.title.includes("weitere"));
+  const brandMore = r.findings.find((f) => f.category === "brand" && f.title.includes("weitere"));
+  const relevant = r.findings.filter((f) => f.severity !== "info" && f.category !== "brand");
+  const infos = r.findings.filter((f) => f.severity === "info" && f.category !== "brand");
   const high = relevant.filter((f) => f.severity === "critical" || f.severity === "high").length;
   return (
     <div className="space-y-8" data-testid="public-check-result">
@@ -92,6 +94,29 @@ export function CheckResult({ id }: { id: string }) {
         ))}
       </section>
 
+      {brand.length > 0 && (
+        <section className="rounded-2xl border border-sev-high/25 bg-sev-high/[0.04] p-6" data-testid="lookalike-card">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-sev-high" />
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg font-semibold">Phishing-Frühwarnung: {brand.length + (brandMore ? Number(brandMore.title.match(/\d+/)?.[0] ?? 0) : 0)} ähnliche Domains sind registriert</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Diese Domains sehen Ihrer zum Verwechseln ähnlich. {brand.filter((b) => b.severity === "medium").length > 0 && <strong className="text-foreground">{brand.filter((b) => b.severity === "medium").length} davon können E-Mails versenden.</strong>} Sie können legitim sein – oder für gefälschte Rechnungen und Phishing genutzt werden.
+              </p>
+              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                {brand.slice(0, 6).map((b) => (
+                  <li key={b.title} className="flex items-center justify-between gap-2 rounded-lg border bg-card px-3 py-2 text-sm">
+                    <span className="truncate font-mono">{b.title.replace("Ähnliche Domain registriert: ", "")}</span>
+                    {b.severity === "medium" && <span className="shrink-0 rounded-full bg-sev-high/10 px-2 py-0.5 text-[11px] font-medium text-sev-high">E-Mail-fähig</span>}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-xs text-muted-foreground">Mit der kontinuierlichen Überwachung melden wir neue Domains automatisch – oft, bevor die ersten Phishing-Mails verschickt werden.</p>
+            </div>
+          </div>
+        </section>
+      )}
+
       {relevant.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Ergebnisse</h2>
@@ -115,7 +140,7 @@ export function CheckResult({ id }: { id: string }) {
       <section className="rounded-2xl border bg-muted/40 p-6 text-sm">
         <h2 className="font-semibold">Was dieser Kurzcheck nicht abdeckt</h2>
         <p className="mt-2 text-muted-foreground">
-          Ohne Nachweis, dass die Domain Ihnen gehört, prüfen wir nur öffentliche Konfigurationen der Hauptdomain. Nicht enthalten sind: Subdomains (z. B. Shop, Mail, VPN), bekannte offene Dienste, Hinweise auf Datenlecks mit Firmen-E-Mail-Adressen und die laufende Überwachung von Änderungen.
+          Ohne Nachweis, dass die Domain Ihnen gehört, prüfen wir nur öffentliche Konfigurationen der Hauptdomain. Erst nach der Verifizierung prüfen wir: infizierte Rechner mit Firmen-Zugangsdaten (Infostealer), Nennungen auf Ransomware-Leakseiten, Datenlecks mit Firmen-E-Mail-Adressen, Subdomains (z. B. Shop, Mail, VPN) und laufend alle Veränderungen.
         </p>
       </section>
 

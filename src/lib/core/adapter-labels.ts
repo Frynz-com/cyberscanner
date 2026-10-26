@@ -7,6 +7,9 @@ export const ADAPTER: Record<string, { label: string; description: string }> = {
   ct_logs: { label: "Zertifikats-Logs", description: "Certificate Transparency (crt.sh / Cert Spotter)" },
   internetdb: { label: "Offene Dienste (Shodan)", description: "Bekannte offene Ports und CVE-Hinweise" },
   hibp: { label: "Datenlecks (HIBP)", description: "Bekannte Datenlecks mit Firmen-E-Mail-Adressen" },
+  hudsonrock: { label: "Infostealer (Hudson Rock)", description: "Infizierte Geräte mit Firmen-Zugangsdaten" },
+  ransomware_live: { label: "Ransomware-Leakseiten", description: "Nennung auf Erpresser-Leakseiten" },
+  lookalike: { label: "Nachgemachte Domains", description: "Phishing-Frühwarnung durch ähnliche Domains" },
   nuclei: { label: "Schwachstellenprüfung", description: "Freigegebene, nicht-destruktive Prüfmuster" },
 };
 

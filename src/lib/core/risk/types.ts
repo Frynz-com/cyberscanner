@@ -1,7 +1,7 @@
 export type Severity = "critical" | "high" | "medium" | "low" | "info";
 export type Certainty = "confirmed" | "potential" | "informational" | "not_checkable";
 export type Confidence = "high" | "medium" | "low";
-export type FindingCategory = "email" | "dns" | "tls" | "web" | "exposure" | "vulnerability" | "breach" | "asset";
+export type FindingCategory = "email" | "dns" | "tls" | "web" | "exposure" | "vulnerability" | "breach" | "asset" | "brand";
 export type FindingStatus = "new" | "investigating" | "action_required" | "resolved" | "accepted_risk" | "false_positive";
 
 export const OPEN_STATUSES: FindingStatus[] = ["new", "investigating", "action_required"];

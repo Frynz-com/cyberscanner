@@ -2,6 +2,9 @@ import { CtLogsAdapter } from "./ct-logs";
 import { DnsSecurityAdapter } from "./dns-security";
 import { HibpAdapter } from "./hibp";
 import { HttpHeadersAdapter } from "./http-headers";
+import { HudsonRockAdapter } from "./hudsonrock";
+import { LookalikeAdapter } from "./lookalike";
+import { RansomwareLiveAdapter } from "./ransomware-live";
 import { InternetDbAdapter } from "./internetdb";
 import { NucleiAdapter } from "./nuclei";
 import { SubfinderAdapter } from "./subfinder";
@@ -15,12 +18,12 @@ export function discoveryAdapters(env: Record<string, string | undefined>): Scan
 
 /** Phase 2: Konfigurations- und Intel-Prüfungen auf dem Asset-Bestand */
 export function assessmentAdapters(env: Record<string, string | undefined>): ScannerAdapter[] {
-  return init([new DnsSecurityAdapter(), new TlsAdapter(), new HttpHeadersAdapter(), new InternetDbAdapter(), new HibpAdapter(), new NucleiAdapter()], env);
+  return init([new DnsSecurityAdapter(), new TlsAdapter(), new HttpHeadersAdapter(), new InternetDbAdapter(), new HibpAdapter(), new HudsonRockAdapter(), new RansomwareLiveAdapter(), new LookalikeAdapter(), new NucleiAdapter()], env);
 }
 
 /** Öffentlicher Kurzcheck: nur schonende Konfigurationsprüfungen der Hauptdomain */
 export function publicCheckAdapters(env: Record<string, string | undefined>): ScannerAdapter[] {
-  return init([new DnsSecurityAdapter(), new TlsAdapter(), new HttpHeadersAdapter()], env);
+  return init([new DnsSecurityAdapter(), new TlsAdapter(), new HttpHeadersAdapter(), new LookalikeAdapter()], env);
 }
 
 export function allAdapters(env: Record<string, string | undefined>): ScannerAdapter[] {
@@ -39,5 +42,4 @@ function init(adapters: ScannerAdapter[], env: Record<string, string | undefined
  */
 export const PLANNED_PROVIDERS = [
   { key: "spycloud", label: "SpyCloud", status: "not_contracted" },
-  { key: "hudson_rock", label: "Hudson Rock", status: "not_contracted" },
 ] as const;

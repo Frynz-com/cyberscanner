@@ -14,6 +14,9 @@ export function adapterForCheck(check: string): string {
   if (check.startsWith("exposure.")) return "internetdb";
   if (check.startsWith("breach.")) return "hibp";
   if (check.startsWith("vuln.")) return "nuclei";
+  if (check === "intel.infostealer") return "hudsonrock";
+  if (check === "intel.ransomware") return "ransomware_live";
+  if (check.startsWith("brand.")) return "lookalike";
   throw new NonRetryableError(`Keine Nachprüfung für ${check} möglich`);
 }
 

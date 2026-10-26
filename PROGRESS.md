@@ -15,9 +15,16 @@ Stand: 26.10.2026 · Phasen 1–4 umgesetzt (MVP). Alle Angaben unten sind durch
 | **Shodan InternetDB** | ⚠️ implementiert, **lizenzpflichtig** | echte API + Fixtures; im Evaluationsmodus nur außerhalb von Produktion | **Enterprise-Lizenz** von Shodan (laut internetdb.shodan.io nur nicht-kommerziell frei) → `SHODAN_INTERNETDB_LICENSE=enterprise` |
 | **Have I Been Pwned** (Domain Search, optional Stealer Logs) | ⚠️ implementiert, **inaktiv** | Fixtures im dokumentierten API-Format, Retry/429, 401/403 | kostenpflichtiger API-Key; **jede Kundendomain muss zusätzlich im HIBP-Dashboard verifiziert sein** (sonst „nicht prüfbar“); Stealer Logs nur Pro-Tarif; Quellenangabe CC BY 4.0 ist eingebaut |
 | **Nuclei** (MIT) | ⚠️ vorbereitet, **deaktiviert** | Fixtures, Argument-/Scope-Tests; Binary im Container | `NUCLEI_ENABLED=true`, kuratierte `NUCLEI_TEMPLATE_IDS`, Tarif Shield Care, Scope `vuln_scan` in Autorisierung + Asset-Freigabe durch Inhaber. UI zur Erteilung des Scopes `vuln_scan` fehlt noch |
-| **SpyCloud / Hudson Rock** | ❌ nicht implementiert | – | Vertrag/API-Dokumentation; Adapter-Schnittstelle vorhanden (`ScannerAdapter`) |
+| **Hudson Rock – Infostealer** (infizierte Mitarbeiter-/Kundengeräte, Login-URLs, Zeitpunkt, Passwortstärke; keine Zugangsdaten) | ✅ aktiv (Entwicklung) | echte API (heise.de: 5 Mitarbeitergeräte, 2.221 Kundenkonten), Fixtures | kostenloser OSINT-Endpunkt; **kommerzielle Nutzung schriftlich mit Hudson Rock klären** → `HUDSONROCK_TERMS_CONFIRMED=true` (sonst in Produktion gesperrt) |
+| **ransomware.live** (Nennung auf Ransomware-Leakseiten, exakter Domain-Abgleich) | ✅ aktiv | echte API, Fixtures | kostenlos; für hohe Abfragevolumen Pro-API bzw. Absprache |
+| **Nachgemachte Domains** (Typosquatting/Phishing, eigene Implementierung der dnstwist-Methodik, Eigentümer-Erkennung) | ✅ aktiv, auch im kostenlosen Kurzcheck | echte DNS-Läufe (heise.de, bechtle.com), Fixtures | – (nur öffentliche DNS-Abfragen fremder Domains) |
+| **SpyCloud** | ❌ nicht implementiert | – | Enterprise-Vertrag; Adapter-Schnittstelle vorhanden |
 | **Resend** (E-Mail) | ⚠️ implementiert, nicht konfiguriert | Integrationstest (ohne Schlüssel → „nicht versendet“, Limit, Demo-Sperre) | `RESEND_API_KEY`, `EMAIL_FROM`, Domain bei Resend verifizieren |
 | **Stripe** | ⚠️ implementiert, nicht konfiguriert | signierte Webhooks (Integrationstest mit echter Signaturprüfung) | Secret Key, Webhook-Secret, Price-IDs |
+
+## 24/7-Basis
+- Neuer Job-Typ `intel_watch`: leichte Threat-Intel-Läufe (HIBP, Hudson Rock, ransomware.live, nachgemachte Domains) unabhängig vom Vollscan, Intervall je Tarif (Testphase 24 h, Shield 6 h, Shield Care 1 h). Neue Treffer → sofort Befund + Warnung (dedupliziert).
+- Ausbaustufe für echtes Echtzeit-Monitoring: Certificate-Transparency-Stream (neue Zertifikate für Ähnlich-Domains in Minuten), Webhooks kommerzieller Anbieter (z. B. SpyCloud/Flare), menschlicher Bereitschaftsdienst über Partner (Emergency Desk ist vorbereitet).
 
 ## Fertige Funktionen
 

@@ -9,3 +9,6 @@ E-Mail-Aliase durch Platzhalter. Formate entsprechen den Originalausgaben:
 - `hibp-breaches.json` – echte öffentliche Breach-Metadaten (/api/v3/breaches, Auszug); `hibp-breacheddomain.json`, `hibp-subscribeddomains.json` – synthetische Beispiele im dokumentierten Format (keine echten Personen)
 - `nuclei.jsonl` – Beispiel im Format von `nuclei -jsonl` inkl. Treffer außerhalb des Scopes und defekter Zeile
 - `crtsh.json` – Ausgabe von https://crt.sh/?q=%25.<domain>&output=json
+- `hudsonrock-domain.json` – echte Antwort des kostenlosen Hudson-Rock-OSINT-Endpunkts (Domain anonymisiert); enthält nur Zählwerte und Login-URLs, keine Zugangsdaten
+- `hudsonrock-clean.json` – Antwortformat für eine Domain ohne Treffer
+- `ransomwarelive-search.json` – Format von `api.ransomware.live/v2/searchvictims/<begriff>`, Einträge fiktiv ersetzt
