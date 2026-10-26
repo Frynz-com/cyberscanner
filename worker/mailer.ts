@@ -37,6 +37,11 @@ export async function processEmailOutbox(deps: WorkerDeps) {
   let sent = 0;
   const since = new Date(Date.now() - 86_400_000).toISOString();
   for (const n of pending) {
+    const { data: org } = await db.from("organizations").select("is_demo").eq("id", n.org_id).single();
+    if (!org || org.is_demo) {
+      await db.from("notifications").update({ email_status: "skipped", email_error: "Demo-Mandant – kein E-Mail-Versand" }).eq("id", n.id);
+      continue;
+    }
     const { count } = await db.from("notifications").select("id", { count: "exact", head: true }).eq("org_id", n.org_id).eq("email_status", "sent").gte("email_sent_at", since);
     if ((count ?? 0) >= MAX_EMAILS_PER_ORG_PER_DAY) {
       await db.from("notifications").update({ email_status: "suppressed", email_error: "Tageslimit erreicht – nur in der App sichtbar" }).eq("id", n.id);

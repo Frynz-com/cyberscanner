@@ -19,7 +19,10 @@ export function CreateReportButton({ orgId }: { orgId: string }) {
           if (!r.ok) return void toast.error(r.error);
           toast.success("Bericht erstellt", { description: "Der Download startet." });
           router.refresh();
-          window.location.href = `/api/reports/${r.data!.id}/pdf`;
+          const a = document.createElement("a");
+          a.href = `/api/reports/${r.data!.id}/pdf`;
+          a.download = "";
+          a.click();
         })
       }
     >

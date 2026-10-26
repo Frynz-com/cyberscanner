@@ -71,3 +71,8 @@ export function relativeTime(iso: string | null | undefined): string {
   if (abs < 30 * 86_400_000) return rtf.format(sign * Math.round(abs / 86_400_000), "day");
   return formatDate(iso);
 }
+
+/** Zeitpunkt vor n Tagen (außerhalb von Render-Funktionen berechnet). */
+export function daysAgoIso(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString();
+}

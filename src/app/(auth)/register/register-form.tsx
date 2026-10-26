@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function RegisterForm() {
+export function RegisterForm({ domain }: { domain?: string }) {
   const [state, action] = useActionState(registerAction, null);
   if (state?.ok && state.data?.confirm) {
     return (
@@ -23,6 +23,7 @@ export function RegisterForm() {
   const fe = state && !state.ok ? state.fieldErrors : undefined;
   return (
     <form action={action} className="space-y-4">
+      {domain && <input type="hidden" name="domain" value={domain} />}
       <div className="space-y-2">
         <Label htmlFor="fullName">Ihr Name</Label>
         <Input id="fullName" name="fullName" autoComplete="name" required autoFocus />

@@ -20,6 +20,7 @@ export async function createOrganizationAction(_: unknown, formData: FormData): 
   const result = await runAction(async () => {
     const user = await requireUser();
     const input = orgSchema.parse(formToObject(formData));
+    if (user.app_metadata?.demo) throw new UserError("Im Demo-Konto können keine echten Organisationen angelegt werden.");
     if (!(await rateLimit(`create-org:${user.id}`, 86400, 5))) throw new UserError("Tageslimit für neue Organisationen erreicht.");
     const existing = await getOrgContext();
     if (existing && existing.memberships.some((m) => !m.is_demo)) throw new UserError("Sie haben bereits eine Organisation angelegt.");

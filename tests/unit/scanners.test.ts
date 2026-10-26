@@ -202,7 +202,7 @@ describe("InternetDB-Adapter", () => {
     const fetchImpl = vi.fn(async (url: string | URL) => (String(url).endsWith("1.1.1.1") ? jsonResponse(json("internetdb-cdn.json")) : jsonResponse(json("internetdb-exposed.json"))));
     const a = new InternetDbAdapter(fetchImpl as unknown as typeof fetch);
     a.initialize({ SHODAN_INTERNETDB_LICENSE: "enterprise" });
-    const run = await runAdapter(a, ctx({ ips: ["1.1.1.1", "198.51.100.23", "10.0.0.1"], isKnownExploited: (c) => c === "CVE-2019-0708" }));
+    await runAdapter(a, ctx({ ips: ["1.1.1.1", "198.51.100.23", "10.0.0.1"], isKnownExploited: (c) => c === "CVE-2019-0708" }));
     expect(fetchImpl).toHaveBeenCalledTimes(1); // private (10/8) und reservierte Dokumentations-IPs (198.51.100/24) werden nie abgefragt
     expect(isCdnEntry(json("internetdb-cdn.json"))).toBe(true);
   });

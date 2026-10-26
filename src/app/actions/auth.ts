@@ -18,6 +18,7 @@ const registerSchema = z.object({
   email: z.email("Bitte geben Sie eine gültige E-Mail-Adresse ein.").max(254),
   password: passwordSchema,
   terms: z.literal("on", { error: "Bitte stimmen Sie den Nutzungsbedingungen und der Datenschutzerklärung zu." }),
+  domain: z.string().max(253).regex(/^[a-z0-9.-]*$/).optional(),
 });
 
 function safeNext(next: string | undefined): string {
@@ -25,18 +26,20 @@ function safeNext(next: string | undefined): string {
 }
 
 export async function registerAction(_: unknown, formData: FormData): Promise<ActionResult<{ confirm: boolean }>> {
+  let next = "/onboarding";
   const result = await runAction(async () => {
     if (!(await rateLimit(`register:${await clientIpHash()}`, 3600, 10))) {
       return { ok: false as const, error: "Zu viele Versuche. Bitte versuchen Sie es später erneut." };
     }
     const input = registerSchema.parse(formToObject(formData));
+    if (input.domain) next = `/onboarding?domain=${encodeURIComponent(input.domain)}`;
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signUp({
       email: input.email.toLowerCase(),
       password: input.password,
       options: {
         data: { full_name: input.fullName },
-        emailRedirectTo: `${process.env.APP_URL}/auth/confirm?next=/onboarding`,
+        emailRedirectTo: `${process.env.APP_URL}/auth/confirm?next=${encodeURIComponent(next)}`,
       },
     });
     if (error) {
@@ -46,7 +49,7 @@ export async function registerAction(_: unknown, formData: FormData): Promise<Ac
     }
     return { ok: true as const, data: { confirm: !data.session } };
   });
-  if (result.ok && !result.data?.confirm) redirect("/onboarding");
+  if (result.ok && !result.data?.confirm) redirect(next);
   return result;
 }
 

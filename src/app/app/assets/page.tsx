@@ -3,7 +3,7 @@ import { Network } from "lucide-react";
 import { VulnScanToggle } from "@/components/domains/vuln-toggle";
 import { PageHeader } from "@/components/shared/page-header";
 import { getEntitlements } from "@/lib/core/entitlements";
-import { formatDate, relativeTime } from "@/lib/labels";
+import { daysAgoIso, formatDate, relativeTime } from "@/lib/labels";
 import { createClient } from "@/lib/supabase/server";
 import { requireOrg } from "@/lib/server/auth";
 
@@ -27,7 +27,7 @@ export default async function AssetsPage({ searchParams }: { searchParams: Promi
   let q = supabase.from("assets").select("id, kind, value, sources, first_seen_at, last_seen_at, is_active, vuln_scan_approved, metadata").eq("org_id", ctx.org.id).order("kind").order("value").limit(1000);
   if (kind && KIND[kind]) q = q.eq("kind", kind);
   const [{ data: assets }, { count: total }, ent] = await Promise.all([q, supabase.from("assets").select("id", { count: "exact", head: true }).eq("org_id", ctx.org.id), getEntitlements(supabase, ctx.org.id)]);
-  const recent = new Date(Date.now() - 7 * 86_400_000).toISOString();
+  const recent = daysAgoIso(7);
 
   return (
     <div className="space-y-6">

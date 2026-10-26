@@ -61,7 +61,7 @@ export function CompanyStep({ defaultEmail }: { defaultEmail: string }) {
   );
 }
 
-export function DomainStep({ orgId }: { orgId: string }) {
+export function DomainStep({ orgId, suggested }: { orgId: string; suggested?: string }) {
   const router = useRouter();
   const [state, action] = useActionState(async (prev: unknown, fd: FormData) => {
     const res = await addDomainAction(prev, fd);
@@ -75,7 +75,7 @@ export function DomainStep({ orgId }: { orgId: string }) {
         <input type="hidden" name="orgId" value={orgId} />
         <div className="space-y-2">
           <Label htmlFor="domain">Domain</Label>
-          <Input id="domain" name="domain" placeholder="firma.de" required autoFocus autoCapitalize="none" spellCheck={false} />
+          <Input id="domain" name="domain" placeholder="firma.de" defaultValue={suggested} required autoFocus autoCapitalize="none" spellCheck={false} />
           <FieldError message={state && !state.ok ? state.error : undefined} />
         </div>
         <SubmitButton pendingText="Wird geprüft …">Domain hinzufügen</SubmitButton>

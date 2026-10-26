@@ -5,7 +5,8 @@ import { RegisterForm } from "./register-form";
 
 export const metadata: Metadata = { title: "Registrieren" };
 
-export default async function RegisterPage() {
+export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ domain?: string }> }) {
+  const { domain } = await searchParams;
   if (await getUser()) redirect("/onboarding");
   return (
     <div className="space-y-8">
@@ -14,7 +15,7 @@ export default async function RegisterPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Konto erstellen</h1>
         <p className="text-sm text-muted-foreground">In wenigen Minuten zur ersten Sicherheitsübersicht – ohne Installation.</p>
       </div>
-      <RegisterForm />
+      <RegisterForm domain={domain} />
     </div>
   );
 }

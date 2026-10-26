@@ -12,9 +12,11 @@ export const metadata: Metadata = { title: "Einrichtung" };
 
 const STEPS = ["Konto", "Unternehmen", "Domain", "Verifizieren", "Freigabe", "Erste Prüfung", "Ergebnisse"];
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ domain?: string }> }) {
+  const { domain: suggested } = await searchParams;
   const user = await requireUser();
   const ctx = await getOrgContext();
+  if (user.app_metadata?.demo) redirect("/app");
   const realOrg = ctx && !ctx.org.is_demo ? ctx : null;
   let step = 2;
   let content: React.ReactNode = <CompanyStep defaultEmail={user.email ?? ""} />;
@@ -25,7 +27,7 @@ export default async function OnboardingPage() {
     const domain = domains?.[0];
     if (!domain) {
       step = 3;
-      content = <DomainStep orgId={realOrg.org.id} />;
+      content = <DomainStep orgId={realOrg.org.id} suggested={suggested} />;
     } else if (domain.verification_status !== "verified") {
       step = 4;
       const { data: ch } = await supabase.from("verification_challenges").select("record_name, token, expires_at").eq("domain_id", domain.id).is("consumed_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
