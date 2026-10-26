@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import type { Observation } from "@/lib/core/risk/types";
 import type { AdapterRun } from "@/lib/core/scanners/runner";
 import type { AdapterOutput } from "@/lib/core/scanners/types";
 import { persistFindings } from "../../worker/persist";
@@ -99,7 +100,7 @@ describe("Persistenz: Deduplizierung, Änderungserkennung, Nachprüfung, Benachr
   const dmarcMissing = () => ({ ruleId: "email.dmarc.missing", asset: apex, facts: { hasMx: true }, evidence: {} });
   const dangling = () => ({ ruleId: "dns.dangling_cname", asset: `old.${apex}`, discriminator: "t.example", facts: { target: "t.example" }, evidence: {} });
   const cov = [{ asset: apex, check: "email.dmarc" }, { asset: `old.${apex}`, check: "dns.dangling" }];
-  const persist = (observations: ReturnType<typeof dmarcMissing>[], coverage = cov) =>
+  const persist = (observations: Observation[], coverage = cov) =>
     persistFindings(service, { orgId: org.orgId, domainId: org.domainId, apex, jobId, runs: [run("dns", { observations, coverage })] });
 
   it("erster Lauf erzeugt Befunde, Ereignisse, Timeline und genau eine Warnung je hohem Befund", async () => {
@@ -207,5 +208,26 @@ describe("Scheduler", () => {
     const { data } = await service.from("scan_jobs").select("domain_id").eq("trigger", "schedule").in("domain_id", [a.domainId, b.domainId]);
     expect(data!.map((d) => d.domain_id)).toEqual([a.domainId]);
     await service.from("scan_jobs").update({ status: "cancelled" }).eq("domain_id", a.domainId);
+  });
+});
+
+describe("Löschkonzept", () => {
+  it("löscht eine Organisation endgültig inkl. Dateien; Audit-Log bleibt (entkoppelt) erhalten", async () => {
+    const { applyRetention } = await import("../../worker/maintenance");
+    const u = await createUser("purge");
+    const { orgId, domainId } = await createOrgWithDomain(u.id, "Lösch GmbH", `purge-${Date.now()}.de`);
+    await service.from("findings").insert({ org_id: orgId, domain_id: domainId, asset_value: "x", fingerprint: "p1", rule_id: "dns.caa.missing", check_key: "dns.caa", category: "dns", source: "dns", title: "t", summary: "s", business_impact: "b", recommendation: "r", technical_details: "t", severity: "low", certainty: "confirmed", confidence: "high" });
+    const { data: inc } = await service.from("incidents").insert({ org_id: orgId, type: "other", priority: "p3", title: "Test" }).select("id").single();
+    const path = `${orgId}/${inc!.id}/datei.txt`;
+    await service.storage.from("incident-files").upload(path, Buffer.from("x"), { contentType: "text/plain" });
+    await service.from("incident_files").insert({ org_id: orgId, incident_id: inc!.id, storage_path: path, file_name: "datei.txt", content_type: "text/plain", size_bytes: 1, sha256: "x" });
+    await service.from("audit_logs").insert({ org_id: orgId, actor_type: "user", action: "test.before_delete" });
+    await service.from("organizations").update({ deleted_at: new Date(Date.now() - 31 * 86_400_000).toISOString() }).eq("id", orgId);
+    await applyRetention(deps());
+    expect((await service.from("organizations").select("id").eq("id", orgId)).data).toHaveLength(0);
+    expect((await service.from("findings").select("id").eq("org_id", orgId)).data).toHaveLength(0);
+    expect((await service.storage.from("incident-files").download(path)).data).toBeNull();
+    const { data: logs } = await service.from("audit_logs").select("org_id").eq("action", "test.before_delete").order("id", { ascending: false }).limit(1);
+    expect(logs![0].org_id).toBeNull();
   });
 });

@@ -1,0 +1,42 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - uses: supabase/setup-cli@v1
+        with: { version: 2.122.0 }
+      - name: Lokale Supabase starten
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,realtime,mailpit
+      - name: Umgebung für Tests
+        run: |
+          eval "$(supabase status -o env | sed 's/^/export /')"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "DATA_ENCRYPTION_KEY=$(openssl rand -base64 32)"
+            echo "APP_URL=http://localhost:3000"
+            echo "DEMO_USER_EMAIL=demo@cybersafe24-demo.example"
+            echo "DEMO_USER_PASSWORD=$(openssl rand -hex 12)Aa1"
+          } > .env.local
+      - run: pnpm test:integration
+      - uses: actions/setup-go@v5
+        with: { go-version: '1.26' }
+      - name: Subfinder installieren (für E2E-Scan)
+        run: go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@v2.17.0 && echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      - run: pnpm demo:seed
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e

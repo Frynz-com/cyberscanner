@@ -1,6 +1,6 @@
 # CyberSafe24 Shield – isolierter Scan-Worker
 # Build:  docker build -f deploy/worker.Dockerfile -t cybersafe24-worker .
-FROM golang:1.26-bookworm AS tools
+FROM public.ecr.aws/docker/library/golang:1.26-bookworm AS tools
 # Versionen bewusst gepinnt (MIT-lizenziert, ProjectDiscovery)
 ARG SUBFINDER_VERSION=v2.17.0
 ARG NUCLEI_VERSION=v3.11.1
@@ -10,7 +10,7 @@ RUN --mount=type=secret,id=extra_ca,required=false \
     CGO_ENABLED=0 go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@${SUBFINDER_VERSION} \
  && CGO_ENABLED=0 go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@${NUCLEI_VERSION}
 
-FROM node:22-bookworm-slim AS deps
+FROM public.ecr.aws/docker/library/node:22-bookworm-slim AS deps
 WORKDIR /app
 RUN corepack enable
 COPY package.json pnpm-lock.yaml ./
@@ -18,7 +18,7 @@ RUN --mount=type=secret,id=extra_ca,required=false \
     if [ -f /run/secrets/extra_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/extra_ca; fi; \
     pnpm install --frozen-lockfile --prod=false
 
-FROM node:22-bookworm-slim
+FROM public.ecr.aws/docker/library/node:22-bookworm-slim
 ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tini && rm -rf /var/lib/apt/lists/* \
  && useradd --system --uid 10001 --home /home/scanner --create-home scanner

@@ -112,12 +112,25 @@ export async function applyRetention(deps: WorkerDeps) {
   const { data: orgs } = await db.from("organizations").select("id, data_retention_days, deleted_at");
   for (const o of orgs ?? []) {
     if (o.deleted_at && new Date(o.deleted_at).getTime() < now - 30 * 86_400_000) {
-      await db.from("organizations").delete().eq("id", o.id); // Kaskadierende Löschung aller Mandantendaten
+      await purgeOrganization(deps, o.id);
       continue;
     }
     const cutoff = new Date(now - o.data_retention_days * 86_400_000).toISOString();
     await db.from("breach_records").delete().eq("org_id", o.id).lt("last_observed_at", cutoff);
     await db.from("scan_results").delete().eq("org_id", o.id).lt("finished_at", cutoff);
   }
-  // Dateien gelöschter Organisationen werden über incident_files/reports-Verweise mitgelöscht (siehe Storage-Bereinigung)
+}
+
+/** Endgültige Löschung einer Organisation inkl. Storage-Dateien (Audit-Einträge werden entkoppelt, nicht gelöscht). */
+export async function purgeOrganization(deps: WorkerDeps, orgId: string) {
+  const { db } = deps;
+  const { data: files } = await db.from("incident_files").select("storage_path").eq("org_id", orgId);
+  const paths = (files ?? []).map((f) => f.storage_path);
+  for (let i = 0; i < paths.length; i += 100) await db.storage.from("incident-files").remove(paths.slice(i, i + 100));
+  const { data: reports } = await db.from("reports").select("storage_path").eq("org_id", orgId).not("storage_path", "is", null);
+  const rp = (reports ?? []).map((r) => r.storage_path!).filter(Boolean);
+  if (rp.length) await db.storage.from("reports").remove(rp);
+  const { error } = await db.from("organizations").delete().eq("id", orgId); // Kaskade über alle Mandantentabellen
+  if (error) throw new Error(`Organisation ${orgId} konnte nicht gelöscht werden: ${error.message}`);
+  await db.from("audit_logs").insert({ actor_type: "system", action: "organization.purged", target_type: "organization", target_id: orgId });
 }
