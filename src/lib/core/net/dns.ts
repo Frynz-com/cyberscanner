@@ -116,7 +116,7 @@ export async function resolveAddresses(r: DnsResolver, name: string): Promise<{ 
 
 /** Fixture-Resolver für Tests: Schlüssel "name|TYPE". */
 export class StaticResolver implements DnsResolver {
-  constructor(private records: Record<string, Partial<DnsResponse> & { answers?: Array<Omit<DnsAnswer, "ttl" | "name"> & { name?: string; ttl?: number }> }>) {}
+  constructor(private records: Record<string, { status?: DnsStatus; authenticated?: boolean; answers?: Array<{ type: number; data: string; name?: string; ttl?: number }> }>) {}
   async query(name: string, type: RRType): Promise<DnsResponse> {
     const hit = this.records[`${name}|${type}`];
     if (!hit) return { status: "NXDOMAIN", authenticated: false, answers: [] };

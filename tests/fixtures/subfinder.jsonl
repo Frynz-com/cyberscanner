@@ -1,0 +1,14 @@
+{"host":"ctspecial-download.kunde-beispiel.de","input":"kunde-beispiel.de","source":"crtname"}
+{"host":"production.web.compaliate-landingpage.ffm.services.kunde-beispiel.de","input":"kunde-beispiel.de","source":"crtname"}
+{"host":"hls.kunde-beispiel.de.wal01.dave.kunde-beispiel.de","input":"kunde-beispiel.de","source":"crtname"}
+{"host":"production.scale-url-microservice-node.web.ffm.services.kunde-beispiel.de","input":"kunde-beispiel.de","source":"crtname"}
+{"host":"zsdb.intern.kunde-beispiel.de.kim01.dave.kunde-beispiel.de","input":"kunde-beispiel.de","source":"crtname"}
+{"host":"janus.kunde.han.services.kunde-beispiel.de","input":"kunde-beispiel.de","source":"subdomaincenter"}
+{"host":"www.aktionen.kunde-beispiel.de","input":"kunde-beispiel.de","source":"subdomaincenter"}
+{"host":"epaper.kunde-beispiel.de.kaw01.dave.kunde-beispiel.de","input":"kunde-beispiel.de","source":"anubis"}
+{"host":"foto.kunde-beispiel.de","input":"kunde-beispiel.de","source":"anubis"}
+{"host":"zsdb.intern.kunde-beispiel.de.dst01.dave.kunde-beispiel.de","input":"kunde-beispiel.de","source":"anubis"}
+{"host":"production.authorization.proddb.content-it.kunde-beispiel.de","input":"kunde-beispiel.de","source":"crtname"}
+{"host":"www.kunde-beispiel.de.edi01.dave.kunde-beispiel.de","input":"kunde-beispiel.de","source":"crtname"}
+{"host":"evil.example.org","input":"kunde-beispiel.de","source":"anubis"}
+{"host":"*.wild.kunde-beispiel.de","input":"kunde-beispiel.de","source":"crtsh"}

@@ -1,0 +1,1 @@
+{"cpes":["cpe:/a:openbsd:openssh:7.4","cpe:/o:microsoft:windows","cpe:/a:microsoft:internet_information_services:8.5"],"hostnames":["vpn.kunde-beispiel.de"],"ip":"198.51.100.23","ports":[22,443,3389,445],"tags":["self-signed"],"vulns":["CVE-2019-0708","CVE-2018-15473","CVE-2017-7269"]}

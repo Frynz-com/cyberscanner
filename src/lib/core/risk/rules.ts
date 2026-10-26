@@ -708,7 +708,7 @@ rule({
   category: "vulnerability",
   certainty: "confirmed",
   confidence: "medium",
-  title: (o) => `${str(o, "name")}`,
+  title: (o) => str(o, "name") || "Treffer eines freigegebenen Prüfmusters",
   evaluate: (o) => {
     const s = str(o, "severity") as Severity;
     const valid: Severity[] = ["critical", "high", "medium", "low", "info"];
