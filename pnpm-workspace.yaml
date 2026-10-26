@@ -1,0 +1,4 @@
+ignoredBuiltDependencies:
+  - unrs-resolver
+# Supply-Chain-Schutz: keine Paketversionen installieren, die jünger als 24 Stunden sind
+minimumReleaseAge: 1440
