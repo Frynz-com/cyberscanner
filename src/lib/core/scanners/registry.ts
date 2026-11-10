@@ -36,10 +36,14 @@ function init(adapters: ScannerAdapter[], env: Record<string, string | undefined
 }
 
 /**
- * Weitere lizenzierte Breach-/Threat-Intel-Anbieter (z. B. SpyCloud, Hudson Rock) werden als
- * ScannerAdapter mit requiredScope "passive" und eigener Lizenzprüfung in checkAvailability()
- * implementiert und hier registriert. Ohne Vertrag bleiben sie bewusst unimplementiert.
+ * Geplante Intel-/Leak-Anbieter (siehe docs/VISION_EXTERNAL_WATCH.md).
+ * Jeweils als ScannerAdapter mit requiredScope "passive" und Lizenz-/ToS-Prüfung in
+ * checkAvailability(). Ohne Vertrag oder Keys bleiben sie bewusst unimplementiert.
  */
 export const PLANNED_PROVIDERS = [
+  { key: "ransomlook", label: "RansomLook", status: "planned_adapter" },
+  { key: "leakix", label: "LeakIX", status: "planned_adapter" },
+  { key: "github_exposure", label: "GitHub / Gist Exposure", status: "planned_adapter" },
+  { key: "paste_watch", label: "Paste Watch", status: "planned_adapter" },
   { key: "spycloud", label: "SpyCloud", status: "not_contracted" },
 ] as const;

@@ -1,5 +1,7 @@
 # Architektur – CyberSafe24 Shield
 
+Ausbaupfad Außenwache (Darknet-/Leak-Monitoring, Watchlist Cortex) und spätere digitale Köder: [VISION_EXTERNAL_WATCH.md](./VISION_EXTERNAL_WATCH.md).
+
 ## Leitentscheidungen
 
 1. **Ein Repository, ein Paket.** Next.js-App und Worker teilen sich den Kern unter `src/lib/core` (Adapter, Risk Engine, Netzwerk-Schutz). Kein Monorepo-Overhead.

@@ -6,7 +6,7 @@ External Attack Surface Monitoring, Datenleck-Hinweise und Fix & Verify für mit
 
 **Stack:** Next.js 16 (App Router, TypeScript, Tailwind v4, shadcn/ui) · Supabase (Postgres + RLS, Auth, Storage) · Zod · Stripe · Resend · @react-pdf/renderer · Docker-Worker mit ProjectDiscovery Subfinder/Nuclei.
 
-Dokumentation: [Architektur](docs/ARCHITECTURE.md) · [Deployment](docs/DEPLOYMENT.md) · [Bedrohungsmodell](docs/THREAT_MODEL.md) · [Sicherheit & Datenschutz](docs/SECURITY_PRIVACY.md) · [Projektstatus](PROGRESS.md)
+Dokumentation: [Architektur](docs/ARCHITECTURE.md) · [Außenwache-Vision](docs/VISION_EXTERNAL_WATCH.md) · [Deployment](docs/DEPLOYMENT.md) · [Bedrohungsmodell](docs/THREAT_MODEL.md) · [Sicherheit & Datenschutz](docs/SECURITY_PRIVACY.md) · [Projektstatus](PROGRESS.md)
 
 ## Schnellstart (lokal)
 
