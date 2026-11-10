@@ -86,3 +86,4 @@ Stand: 26.10.2026 · Phasen 1–4 umgesetzt (MVP). Alle Angaben unten sind durch
 6. CSP mit Nonces, Sentry-Anbindung, Egress-Firewall-Automatisierung, Worker-Image verschlanken (derzeit ~1,6 GB inkl. Dev-Dependencies).
 7. Optionale KI-Zusammenfassung (nur Umformulierung vorhandener Befunde) – bewusst noch nicht umgesetzt.
 8. Externer Penetrationstest, juristische Prüfung (AVV, AGB, Scan-Autorisierungstext).
+9. **Außenwache (Strategie):** siehe [docs/VISION_EXTERNAL_WATCH.md](docs/VISION_EXTERNAL_WATCH.md) – nächster Slice: Watchlist `brand` + Adapter RansomLook + LeakIX in `intel_watch`; Darknet/Chat-Lane und digitale Köder (Canarytokens/OpenCanary) bewusst danach.
